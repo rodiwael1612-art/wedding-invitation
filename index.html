@@ -4,89 +4,183 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wedding Invitation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cairo:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #f9f6f0;
+      --envelope-base: #dfd3c3;
+      --envelope-flap: #cfbfad;
+      --accent: #8c6d53;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: #f9f6f0;
-      margin: 0;
-      padding: 0;
+      background-color: var(--bg);
+      font-family: 'Cairo', sans-serif;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* شاشة الظرف الافتتاحية */
+    #welcomeScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      overflow-x: hidden;
+      z-index: 9999;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
     }
-    .invitation-container {
-      max-width: 500px;
+    .envelope-box {
+      width: 280px;
+      height: 200px;
+      position: relative;
+      cursor: pointer;
+    }
+    .envelope {
       width: 100%;
+      height: 100%;
+      background: var(--envelope-base);
+      border-radius: 6px;
+      position: relative;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      border-radius: 12px;
-      overflow: hidden;
-      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 140px solid transparent;
+      border-right: 140px solid transparent;
+      border-top: 100px solid var(--envelope-flap);
+      transform-origin: top;
+      transition: transform 0.6s ease;
+      z-index: 3;
+    }
+    .envelope.open .envelope-flap {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+    .hint-text {
+      font-family: 'Alex Brush', cursive;
+      font-size: 26px;
+      color: var(--accent);
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    /* محتوى الموقع الأساسي (التصميم الطويل) */
+    .main-content {
+      opacity: 0;
+      transition: opacity 1s ease;
+      width: 100%;
+      max-width: 500px;
       display: flex;
       flex-direction: column;
+      align-items: center;
     }
-    .invitation-container img {
+    .main-content.show {
+      opacity: 1;
+    }
+    .main-content img {
       width: 100%;
       height: auto;
       display: block;
     }
+
+    /* زرار الموسيقى العائم */
     .music-btn {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      background: #8c6d53;
+      bottom: 25px;
+      right: 25px;
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
       color: #fff;
       border: none;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 22px;
+      font-size: 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       z-index: 1000;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
     }
   </style>
 </head>
-<body onclick="playMusicOnTouch()">
+<body>
 
   <!-- ملف الصوت المرفوع -->
   <audio id="weddingSong" loop preload="auto">
     <source src="music.mp3.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- زرار التحكم بالصوت عائم -->
-  <button class="music-btn" onclick="event.stopPropagation(); toggleMusic();">🎵</button>
+  <!-- زر التحكم بالصوت -->
+  <button id="musicBtn" class="music-btn" onclick="toggleMusic()">🎵</button>
 
-  <div class="invitation-container">
-    <!-- صورة تصميم كانفا الخاصة بكِ -->
-    <img src="card.png.png" alt="Wedding Invitation">
+  <!-- شاشة الظرف -->
+  <div id="welcomeScreen" onclick="openInvitation()">
+    <div class="envelope-box">
+      <div class="envelope" id="env">
+        <div class="envelope-flap"></div>
+      </div>
+    </div>
+    <div class="hint-text">اضغط لفتح الدعوة ✨</div>
+  </div>
+
+  <!-- التصميم الطويل -->
+  <div class="main-content" id="mainContent">
+    <img src="invitation.png.png" alt="Wedding Invitation">
   </div>
 
   <script>
     const song = document.getElementById("weddingSong");
-    let hasPlayed = false;
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const mainContent = document.getElementById("mainContent");
+    const musicBtn = document.getElementById("musicBtn");
+    const env = document.getElementById("env");
+    let isPlaying = false;
 
-    // تشغيل الأغنية تلقائياً فور أول لمسة للشاشة
-    function playMusicOnTouch() {
-      if (!hasPlayed) {
-        song.play().then(() => {
-          hasPlayed = true;
-        }).catch(err => {
-          console.log("Autoplay blocked waiting for user interaction");
-        });
-      }
+    function openInvitation() {
+      env.classList.add("open");
+      
+      // تشغيل الموسيقى
+      song.play().then(() => {
+        isPlaying = true;
+        musicBtn.style.display = "flex";
+      }).catch(e => console.log(e));
+
+      // إخفاء شاشة الظرف بسلاسة وإظهار التصميم
+      setTimeout(() => {
+        welcomeScreen.style.opacity = "0";
+        setTimeout(() => {
+          welcomeScreen.style.display = "none";
+          mainContent.classList.add("show");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 800);
+      }, 600);
     }
 
-    // زرار للتحكم (إيقاف/تشغيل)
     function toggleMusic() {
-      if (song.paused) {
-        song.play();
-      } else {
+      if (isPlaying) {
         song.pause();
+        isPlaying = false;
+        musicBtn.innerHTML = "🔇";
+      } else {
+        song.play();
+        isPlaying = true;
+        musicBtn.innerHTML = "🎵";
       }
     }
   </script>
