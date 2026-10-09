@@ -4,97 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wedding Invitation</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cairo:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #f9f6f0;
-      --card-bg: #fdfbf7;
-      --card-inner: #f4eee2;
-      --primary: #4a3b32;
-      --accent: #8c6d53;
-      --accent-light: #d8c8b8;
-      --envelope-base: #dfd3c3;
-      --envelope-flap: #cfbfad;
-      --heart: #6e473b;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg);
-      color: var(--primary);
-      font-family: 'Cairo', sans-serif;
+      background-color: #f9f6f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
       overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 15px;
     }
-    .container {
-      max-width: 480px;
+    .invitation-container {
+      max-width: 500px;
       width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 30px;
     }
-    .header-title {
-      font-family: 'Alex Brush', cursive;
-      font-size: 42px;
-      color: var(--accent);
-      text-align: center;
-      margin-top: 10px;
+    .invitation-container img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
     .music-btn {
       position: fixed;
-      bottom: 25px;
-      left: 25px;
-      width: 48px;
-      height: 48px;
-      background: var(--accent);
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: #8c6d53;
       color: #fff;
       border: none;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      font-size: 22px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+  </style>
+</head>
+<body onclick="playMusicOnTouch()">
 
-    /* Envelope Interactive */
-    .envelope-box {
-      width: 280px;
-      height: 200px;
-      position: relative;
-      cursor: pointer;
-      margin: 40px auto 20px;
+  <!-- ملف الصوت المرفوع -->
+  <audio id="weddingSong" loop preload="auto">
+    <source src="music.mp3.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- زرار التحكم بالصوت عائم -->
+  <button class="music-btn" onclick="event.stopPropagation(); toggleMusic();">🎵</button>
+
+  <div class="invitation-container">
+    <!-- صورة تصميم كانفا الخاصة بكِ -->
+    <img src="card.png.png" alt="Wedding Invitation">
+  </div>
+
+  <script>
+    const song = document.getElementById("weddingSong");
+    let hasPlayed = false;
+
+    // تشغيل الأغنية تلقائياً فور أول لمسة للشاشة
+    function playMusicOnTouch() {
+      if (!hasPlayed) {
+        song.play().then(() => {
+          hasPlayed = true;
+        }).catch(err => {
+          console.log("Autoplay blocked waiting for user interaction");
+        });
+      }
     }
-    .envelope {
-      width: 100%;
-      height: 100%;
-      background: var(--envelope-base);
-      border-radius: 6px;
-      position: relative;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+
+    // زرار للتحكم (إيقاف/تشغيل)
+    function toggleMusic() {
+      if (song.paused) {
+        song.play();
+      } else {
+        song.pause();
+      }
     }
-    .envelope-flap {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0;
-      height: 0;
-      border-left: 140px solid transparent;
-      border-right: 140px solid transparent;
-      border-top: 100px solid var(--envelope-flap);
-      transform-origin: top;
-      transition: transform 0.6s ease;
-      z-index: 3;
-    }
-    .envelope.open .envelope-flap {
-      transform: rotateX(180deg);
+  </script>
+</body>
+</html>
